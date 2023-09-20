@@ -6,14 +6,13 @@ import tensorflow as tf
 from object_detection.utils import label_map_util
 import numpy as np
 from object_detection.utils import visualization_utils as viz_utils
+from ocr_readings import read_text_on_image
 
 
 
 
 
-
-
-def object_detection(image):
+def object_detection(image, path_of_image):
     user_path = os.path.expanduser("~")
     training_demo_path = os.path.join(user_path, "Desktop", "cekcoz_v3", "workspace", "training_demo")
     config_path = os.path.join(training_demo_path, "models", "cekcoz_resnet", "pipeline.config")
@@ -71,7 +70,66 @@ def object_detection(image):
         min_score_thresh=0.3,
         agnostic_mode=False)
 
+    def process_data(box, detection_class, score):
+        return list([box[0], box[1], box[2], box[3], detection_class + label_id_offset, score])
 
+    aggregated_list = list(map(process_data, detections['detection_boxes'], detections['detection_classes'],
+                          detections['detection_scores']))
+
+    score_threshold = 0.5
+    applicable_list = []
+    for whole_values in aggregated_list:
+        dummy_list = []
+        if whole_values[5] > score_threshold:
+            label_name = (category_index.get(int(whole_values[4]))).get("name")
+            ymin = int(whole_values[0] * img_height)
+            xmin = int(whole_values[1] * img_width)
+            ymax = int(whole_values[2] * img_height)
+            xmax = int(whole_values[3] * img_width)
+            dummy_list.append(ymin)
+            dummy_list.append(xmin)
+            dummy_list.append(ymax)
+            dummy_list.append(xmax)
+            dummy_list.append(label_name)
+            applicable_list.append(dummy_list)
+
+    def area(bbox):
+        """Calculate area of a bounding box."""
+        ymin, xmin, ymax, xmax, _ = bbox
+        return (ymax - ymin) * (xmax - xmin)
+
+    def overlap_area(bbox1, bbox2):
+        """Calculate overlap area between two bounding boxes."""
+        ymin1, xmin1, ymax1, xmax1 = bbox1[:4]
+        ymin2, xmin2, ymax2, xmax2 = bbox2[:4]
+
+        overlap_ymin = max(ymin1, ymin2)
+        overlap_xmin = max(xmin1, xmin2)
+        overlap_ymax = min(ymax1, ymax2)
+        overlap_xmax = min(xmax1, xmax2)
+
+        # Check if the boxes overlap at all
+        if overlap_xmin < overlap_xmax and overlap_ymin < overlap_ymax:
+            return area([overlap_ymin, overlap_xmin, overlap_ymax, overlap_xmax, ''])
+        return 0
+
+    filtered_boxes = []
+    for i in range(len(applicable_list)):
+        for j in range(i + 1, len(applicable_list)):
+            if applicable_list[i][4] == applicable_list[j][4]:  # If the labels are the same
+                overlap = overlap_area(applicable_list[i], applicable_list[j])
+                if overlap >= 0.8 * area(applicable_list[i]):  # If bbox j contains 80% or more of bbox i
+                    break
+                elif overlap >= 0.8 * area(applicable_list[j]):  # If bbox i contains 80% or more of bbox j
+                    continue
+        else:  # If the loop didn't break, add the box to the filtered list
+            filtered_boxes.append(applicable_list[i])
+
+    print(filtered_boxes)
+
+
+    reading_results = read_text_on_image(path_of_image)
+    print(reading_results)
     cv.imshow("image with detections", image_np_with_detections)
     cv.waitKey()
 

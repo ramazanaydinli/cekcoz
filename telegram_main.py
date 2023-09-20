@@ -43,7 +43,7 @@ def reply_to_image(update, context):
         img = cv.imdecode(nparr, cv.IMREAD_COLOR)
         saving_path = os.path.join("gelen_resimler", filename)
         cv.imwrite(saving_path, img)
-        object_detection(img)
+        object_detection(img,saving_path)
 def hello(update, context):
     update.message.reply_text("Merhaba Dünya!")
 
