@@ -7,9 +7,20 @@ from object_detection.utils import label_map_util
 import numpy as np
 from object_detection.utils import visualization_utils as viz_utils
 from ocr_readings import read_text_on_image
+from property_matching import create_components
 
 
 
+# Alttaki satırı sakın açayım deme hem sapıtıyor hem yavaşlıyor
+# @tf.function
+def detect_fn(image, detection_model):
+    """Detect objects in image."""
+
+    image, shapes = detection_model.preprocess(image)
+    prediction_dict = detection_model.predict(image, shapes)
+    detections = detection_model.postprocess(prediction_dict, shapes)
+
+    return detections
 
 
 def object_detection(image, path_of_image):
@@ -23,27 +34,19 @@ def object_detection(image, path_of_image):
     checkpoint_path = os.path.join(training_demo_path, "models", "cekcoz_resnet")
     ckpt.restore(os.path.join(checkpoint_path, 'ckpt-98')).expect_partial()
 
-    @tf.function
-    def detect_fn(image):
-        """Detect objects in image."""
 
-        image, shapes = detection_model.preprocess(image)
-        prediction_dict = detection_model.predict(image, shapes)
-        detections = detection_model.postprocess(prediction_dict, shapes)
-
-        return detections
     label_path = os.path.join(training_demo_path, "annotations", "label_map.pbtxt")
     category_index = label_map_util.create_category_index_from_labelmap(label_path,use_display_name=True)
 
     image_np = np.array(image)
     img_height, img_width = image_np.shape[0], image_np.shape[1]
 
-    cv.imshow("image",image)
-    cv.waitKey()
+    # cv.imshow("image",image)
+    # cv.waitKey()
 
     input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
 
-    detections = detect_fn(input_tensor)
+    detections = detect_fn(input_tensor, detection_model)
 
     # All outputs are batches tensors.
     # Convert to numpy arrays, and take index [0] to remove the batch dimension.
@@ -133,6 +136,7 @@ def object_detection(image, path_of_image):
     cv.imshow("image with detections", image_np_with_detections)
     cv.waitKey()
 
+    calculation_ready_components = create_components(filtered_boxes, reading_results)
 
 
 
