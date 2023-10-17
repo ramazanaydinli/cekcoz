@@ -1,24 +1,22 @@
 import os.path
-
-import telegram.ext
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-from object_detection_main import object_detection
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import numpy as np
 from datetime import datetime
 import cv2 as cv
+from cekcoz_object_detection import object_detection_main
 
 # Bot tokenını buraya ekleyin
 TOKEN = "6517406670:AAF6VHk1RjlVa5FzAxW_ZDmLXQtlJZwatlU"
 
-RESPONSE_MESSAGE = 'Teşekkür ederim! Resmi aldım.'
+RESPONSE_MESSAGE = 'Teşekkür ederim, resmi aldım. Birazdan cevabı ileteceğim.'
 
 def start(update, context):
     user_id = update.message.from_user.id
-    welcome_message = f"ÇekÇöze Hoşgeldiniz, {update.message.from_user.first_name} ({user_id})! İşlem kategorileri hakkında bilgi almak için /kategoriler komutunu kullanabilirsiniz."
+    welcome_message = f"ÇekÇöze Hoşgeldin, {update.message.from_user.first_name} ({user_id})!"
     update.message.reply_text(welcome_message)
 
 def reply_to_image(update, context):
-    print("Resim mesajı alındı!")  # Bu mesajı konsolda görmelisiniz
+    # print("Resim mesajı alındı!")  # Bu mesajı konsolda görmelisiniz
     message = update.message
     user = message.from_user
     chat_id = message.chat_id
@@ -41,9 +39,9 @@ def reply_to_image(update, context):
     if message.photo:
         context.bot.send_message(chat_id=chat_id, text=RESPONSE_MESSAGE)
         img = cv.imdecode(nparr, cv.IMREAD_COLOR)
-        saving_path = os.path.join("gelen_resimler", filename)
+        saving_path = os.path.join("../gelen_resimler", filename)
         cv.imwrite(saving_path, img)
-        object_detection(img,saving_path)
+        object_detection_main(img,saving_path)
 def hello(update, context):
     update.message.reply_text("Merhaba Dünya!")
 

@@ -1,22 +1,11 @@
+from structure.elements import Frame, Node
 
-
-
-def create_components(bbox, text):
-    "bbox: list, each element contains [ymin,xmin,ymax,xmax,label_name]"
-    "text: list, each element contains [text, [topleft_x, topleft_y, topright_x, topright_y,bottomright_x," \
-    "bottomright_y,bottomleft_x,bottomleft_y"
-
-
-    spacing_info = []
-    for element in bbox:
-        if element[4] == "spacing":
-            spacing_info.append(element)
-    print(spacing_info)
-    calculation_ready_components = []
+members = [[Frame(node_1=Node(name=A, bbox_x=121, bbox_y=254, shape_x=0, shape_y=0), node_2=Node(name=None, bbox_x=262, bbox_y=254, shape_x=1, shape_y=0), obj_det_bbox=None, direction=None), Frame(node_1=Node(name=None, bbox_x=262, bbox_y=254, shape_x=1, shape_y=0), node_2=Node(name=None, bbox_x=559, bbox_y=254.0, shape_x=3, shape_y=0), obj_det_bbox=None, direction=None)]]
 
 
 
 
 
 
-    return calculation_ready_components
+
+
