@@ -1,10 +1,7 @@
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from msrest.authentication import CognitiveServicesCredentials
-import os
 import time
-
-
 
 
 def read_text_on_image(path):
@@ -32,7 +29,7 @@ def read_text_on_image(path):
         if read_result.status.lower () not in ['notstarted', 'running']:
             break
         print ('Waiting for result...')
-        time.sleep(10)
+        time.sleep(3)
 
 
     reading_results = []

@@ -8,6 +8,8 @@ from cekcoz_object_detection import object_detection_main
 # Bot tokenını buraya ekleyin
 TOKEN = "6517406670:AAF6VHk1RjlVa5FzAxW_ZDmLXQtlJZwatlU"
 
+
+# Resim mesajı alındığında ekranda gözükecek yazı aşağıdadır.
 RESPONSE_MESSAGE = 'Teşekkür ederim, resmi aldım. Birazdan cevabı ileteceğim.'
 
 def start(update, context):
@@ -39,9 +41,9 @@ def reply_to_image(update, context):
     if message.photo:
         context.bot.send_message(chat_id=chat_id, text=RESPONSE_MESSAGE)
         img = cv.imdecode(nparr, cv.IMREAD_COLOR)
-        saving_path = os.path.join("../gelen_resimler", filename)
+        saving_path = os.path.join(os.getcwd(),"gelen_resimler", filename)
         cv.imwrite(saving_path, img)
-        object_detection_main(img,saving_path)
+        object_detection_main.object_detection(img, saving_path)
 def hello(update, context):
     update.message.reply_text("Merhaba Dünya!")
 
