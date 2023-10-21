@@ -37,7 +37,7 @@ def remove_ambiguous_detections(threshold, data_list, category_index, img_width,
             dummy_list.append(xmax)
             dummy_list.append(label_name)
             new_data_list.append(dummy_list)
-    return  new_data_list
+    return new_data_list
 
 
 def overlap_percentage(bbox1, bbox2):
@@ -97,3 +97,9 @@ def remove_multiple_detections(detections_list, percentage_thresh):
     to_remove = list(set(to_remove))
     detections_list = [detections_list[i] for i in range(len(detections_list)) if i not in to_remove]
     return detections_list
+
+
+
+
+
+

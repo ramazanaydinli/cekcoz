@@ -11,7 +11,6 @@ def read_text_on_image(path):
 
     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
-
     read_image_path = path
     # Open the image
     read_image = open(read_image_path, "rb")
@@ -26,22 +25,17 @@ def read_text_on_image(path):
     # Call the "GET" API and wait for the retrieval of the results
     while True:
         read_result = computervision_client.get_read_result(operation_id)
-        if read_result.status.lower () not in ['notstarted', 'running']:
+        if read_result.status.lower() not in ['notstarted', 'running']:
             break
-        print ('Waiting for result...')
+        print('Waiting for result...')
         time.sleep(3)
-
 
     reading_results = []
     # Print results, line by line
     if read_result.status == OperationStatusCodes.succeeded:
         for text_result in read_result.analyze_result.read_results:
             for line in text_result.lines:
-                dummy_list = []
-                dummy_list.append(line.text)
-                dummy_list.append(line.bounding_box)
-                # print(line.text)
-                # print(line.bounding_box)
+                dummy_list = [line.text, line.bounding_box]
                 reading_results.append(dummy_list)
 
     return reading_results

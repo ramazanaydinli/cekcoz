@@ -12,10 +12,12 @@ TOKEN = "6517406670:AAF6VHk1RjlVa5FzAxW_ZDmLXQtlJZwatlU"
 # Resim mesajı alındığında ekranda gözükecek yazı aşağıdadır.
 RESPONSE_MESSAGE = 'Teşekkür ederim, resmi aldım. Birazdan cevabı ileteceğim.'
 
-def start(update, context):
+
+def start(update):
     user_id = update.message.from_user.id
     welcome_message = f"ÇekÇöze Hoşgeldin, {update.message.from_user.first_name} ({user_id})!"
     update.message.reply_text(welcome_message)
+
 
 def reply_to_image(update, context):
     # print("Resim mesajı alındı!")  # Bu mesajı konsolda görmelisiniz
@@ -32,21 +34,20 @@ def reply_to_image(update, context):
     user_name = user.first_name + " " + (user.last_name if user.last_name else "")
     current_time = datetime.now().strftime("%H:%M:%S")
     current_date = datetime.now().strftime("%Y-%m-%d")
-    text = f"User: {user_name}\nTime: {current_time}\nDate: {current_date}"
     filename = f"{user_name.replace(' ', '_')}_{current_date}_{current_time.replace(':', '-')}.jpg"
     # Byte dizisini bir numpy dizisine dönüştür
     nparr = np.frombuffer(file, np.uint8)
 
-
     if message.photo:
         context.bot.send_message(chat_id=chat_id, text=RESPONSE_MESSAGE)
         img = cv.imdecode(nparr, cv.IMREAD_COLOR)
-        saving_path = os.path.join(os.getcwd(),"gelen_resimler", filename)
+        saving_path = os.path.join(os.getcwd(), "gelen_resimler", filename)
         cv.imwrite(saving_path, img)
         object_detection_main.object_detection(img, saving_path)
-def hello(update, context):
-    update.message.reply_text("Merhaba Dünya!")
 
+
+def hello(update):
+    update.message.reply_text("Merhaba Dünya!")
 
 
 def main():
@@ -63,6 +64,7 @@ def main():
 
     updater.start_polling()
     updater.idle()
+
 
 if __name__ == "__main__":
     main()
