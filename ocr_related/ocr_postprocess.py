@@ -163,6 +163,12 @@ def extract_pl_text(pl_boxes, ocr_results, threshold = 200):
 
 
 def extract_precise_text(point_load_instances, possible_pl_text):
+    """
+    Extracts precise magnitude and value for point loads and assigns related attributes
+    :param point_load_instances: list containing pl instances
+    :param possible_pl_text: close text to bbox of object detection
+    :return: related attributes assigned version of point load instances
+    """
     pattern = r"(?:[A-Za-z]*\s*=\s*)?(?P<value>\d+)\s*(?P<unit>kN|k|t)(?P<type>/ft)?"
     for pl in point_load_instances:
         closest_text_entry = None
@@ -192,4 +198,43 @@ def extract_precise_text(point_load_instances, possible_pl_text):
             pl.value = value
             pl.unit = unit
             pl.text_bbox = closest_text_bbox
+    return point_load_instances
 
+def find_closest_text_dl(ocr_list, bbox):
+    """
+    Detects the closest text to current distributed load instance
+    :param ocr_list: list keeping ocr text
+    :param bbox: object detection bbox of distributed load instance
+    :return: the closest text
+    """
+    y1, x1, y2, x2 = bbox
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2
+
+    # Find the closest text entry to the center of bbox
+    closest_text = min(
+        ocr_list,
+        key=lambda entry: (center_x - (entry[1][0] + entry[1][2] + entry[1][4] + entry[1][6]) / 4)**2 +
+                         (center_y - (entry[1][1] + entry[1][3] + entry[1][5] + entry[1][7]) / 4)**2
+    )
+
+    return closest_text[0]
+
+def extract_precise_text_dl(dl_instances, ocr_text):
+    """
+    Decides proper text belongs to the distributed load
+    :param dl_instances: list keeping instances of distributed load
+    :param ocr_text: list keeping ocr reading result text
+    :return: instances with related attributes assigned
+    """
+    pattern = r"(?i)(?P<value>\d+(\.\d+)?)\s*(?P<unit>kN/m|N/m|k/ft)"
+    for dl in dl_instances:
+        bbox = dl.obj_det_bbox  # Using the obj_det_bbox attribute
+
+        text = find_closest_text_dl(ocr_text, bbox)
+
+        match = re.search(pattern, text)
+        if match:
+            dl.value = float(match.group("value"))  # Convert to float instead of int
+            dl.unit = match.group("unit")
+    return dl_instances

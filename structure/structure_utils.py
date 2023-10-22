@@ -1,7 +1,8 @@
 import cv2 as cv
 import numpy as np
 from structure import calculation_utils
-from structure.structure_classes import Node, Dimension, FixSupport, PinSupport, RollerSupport, Frame, PointLoad
+from structure.structure_classes import Node, Dimension, FixSupport, PinSupport, RollerSupport, Frame, PointLoad,\
+    DistributedLoad
 import itertools
 
 
@@ -449,5 +450,103 @@ def  initialize_pl(pl_boxes, node_instances):
     return point_load_instances
 
 
+def find_closest_nodes_dl(x, y, nodes):
+    """
+    Finds the closest existing nodes for two ends of distributed load
+    :param x: pixel value of x
+    :param y: pixel value of y
+    :param nodes: list of node instances
+    :return: closes node
+    """
+    def node_distance(node):
+        """
+        Calculates distance between node bbox and coordinates of distributed load
+        :param node: current node (taken from the list one by one)
+        :return: distance between current node and obj det coordinates of distributed load
+        """
+        # Here, I'm assuming that the 'bbox_x' and 'bbox_y' attributes of the node provide the center of the node's bounding box.
+        # If not, adjust this calculation to use the correct x and y values.
+        return calculation_utils.euclidean_distance([x, y], [node.bbox_x, node.bbox_y])
 
+    return min(nodes, key=node_distance)
 
+def assign_nodes_dl(dl_with_direction, node_instances):
+    """
+    Assigns the closest nodes both ends of distributed load
+    :param dl_with_direction: dl instances with directions decided
+    :param node_instances: list keeping node instances
+    :return: node attributed assigned distributed load instances
+    """
+    distributed_load_instances = []
+    for box in dl_with_direction:
+        if box[5] == "horizontal":
+
+            y1 = box[0]
+            y2 = box[2]
+            x = int((box[1] + box[3]) / 2)
+            # Get the closest node to x1 and x2
+            c_node1 = find_closest_node(x, y1, node_instances)
+            c_node2 = find_closest_node(x, y2, node_instances)
+
+            dl_instance = DistributedLoad(node1=c_node1, node2=c_node2, obj_det_bbox=box[:4], direction=box[6])
+            distributed_load_instances.append(dl_instance)
+        elif box[5] == "vertical":
+            x1 = box[1]
+            x2 = box[3]
+            y = int((box[0] + box[2]) / 2)
+
+            # Get the closest node to x1 and x2
+            c_node1 = find_closest_node(x1, y, node_instances)
+            c_node2 = find_closest_node(x2, y, node_instances)
+
+            dl_instance = DistributedLoad(node1=c_node1, node2=c_node2, obj_det_bbox=box[:4], direction=box[6])
+            distributed_load_instances.append(dl_instance)
+        else:
+            # Need to fill this later
+            pass
+    return distributed_load_instances
+
+def find_connected_elements(sorted_nodes, new_frame_instances, fix_support_instances, point_load_instances,
+                            roller_support_instances, pin_support_instances, distributed_load_instances):
+    """
+    Loops in node list, for each node finds connected elements
+    :param sorted_nodes: nodes sorted in left to right, bottom to top
+    :param new_frame_instances: divided frame instances
+    :param fix_support_instances: fix support instances
+    :param point_load_instances: point load instances
+    :param roller_support_instances: roller support instances
+    :param pin_support_instances: pin support instances
+    :param distributed_load_instances: distributed load instances
+    :return: returns described list
+    """
+    connected_elements = []
+    for node in sorted_nodes:
+        dummy_list = []
+        # Check frames
+        for frame in new_frame_instances:
+            if node == frame.node_1:
+                dummy_list.append(frame)
+
+        # Check fix_supports
+        for fix_support in fix_support_instances:
+            if fix_support.node == node:
+                dummy_list.append(fix_support)
+
+        # Check point_loads
+        for point_load in point_load_instances:
+            if point_load.node == node:
+                dummy_list.append(point_load)
+        connected_elements.append(dummy_list)
+        for roller_support in roller_support_instances:
+            if roller_support.node == node:
+                dummy_list.append(roller_support)
+        connected_elements.append(dummy_list)
+        for pin_support in pin_support_instances:
+            if pin_support.node == node:
+                dummy_list.append(pin_support)
+        connected_elements.append(dummy_list)
+        for distributed_load in distributed_load_instances:
+            if distributed_load.node1 == node:
+                dummy_list.append(distributed_load)
+        connected_elements.append(dummy_list)
+    return  connected_elements

@@ -9,8 +9,11 @@ from ocr_related.ocr_readings import read_text_on_image
 from cekcoz_object_detection import object_detection_test
 from cekcoz_object_detection import data_postprocess
 from ocr_related import ocr_postprocess
-from structure import calculation_utils, structure_utils
-
+from structure import calculation_utils, structure_utils, image_utils, drawing_utils
+import math
+from structure.structure_classes import Node, Dimension, FixSupport, PinSupport, RollerSupport, Frame, PointLoad,\
+    DistributedLoad
+import cv2 as cv
 
 def detect_fn(image, detection_model):
     """Detect objects in image."""
@@ -21,7 +24,7 @@ def detect_fn(image, detection_model):
 
     return detections
 
-def object_detection(image, path_of_image):
+def object_detection(image, path_of_image, incoming_filename):
 
 
     user_path = os.path.expanduser("~")
@@ -138,6 +141,80 @@ def object_detection(image, path_of_image):
     possible_pl_text = ocr_postprocess.extract_pl_text(pl_boxes, ocr_results)
     # Extracting precise text
     point_load_instances = ocr_postprocess.extract_precise_text(point_load_instances, possible_pl_text)
+    # Checking if any pl exists, if it exists finds direction and appends below
+    if point_load_instances:
+        image_utils.pl_direction(point_load_instances, image)
+    # Sorting nodes below for logical attribute assignment
+    sorted_nodes = sorted(node_instances, key=lambda node: (node.shape_y, node.shape_x))
+    # Distributed load instances created below
+    dl_boxes = [box for box in applicable_list if box[-1] == 'distributed_load']
+    # Deciding direction with image operations
+    dl_with_direction = image_utils.dl_direction(dl_boxes, image, initial_iterations=1, max_iterations=10, threshold=1)
+    # Creating instances
+    distributed_load_instances = structure_utils.assign_nodes_dl(dl_with_direction, node_instances)
+    # Function below assigns magnitude and value of distributed load
+    distributed_load_instances = ocr_postprocess.extract_precise_text_dl(distributed_load_instances, ocr_results)
+
+    # Function below finds connected elements to the nodes (needs to be optimized in future)
+    connected_elements = structure_utils.find_connected_elements(
+        sorted_nodes, new_frame_instances, fix_support_instances, point_load_instances,
+        roller_support_instances, pin_support_instances, distributed_load_instances)
+
+    # Taken images from telegram group will be recreated below
+    # Saving path of recreated images
+    created_image_saving_path = os.path.join(os.getcwd(), "created_images", incoming_filename)
+    # Blank area around the created image
+    padding_of_created_images = 300
+    # For creating a rationally scaled image, find max values below
+    max_shape_x, max_shape_y = image_utils.find_max_values(node_instances)
+    # Scale of the created image obtained below (for each unit length corresponding pixels are calculated)
+    node_value_pixel_x, node_value_pixel_y = image_utils.calculate_node_pixel_values(max_shape_x, max_shape_y,
+                                                                                     img_width, img_height)
+    # Width and height of created image calculated below
+    ci_width, ci_height = image_utils.arrange_drawing_area(max_shape_x, max_shape_y, padding_of_created_images,
+                                                           node_value_pixel_x, node_value_pixel_y)
+    # Detected image will be drawn on the blank image initialized below
+    new_image = image_utils.generate_image(ci_width, ci_height)
+    # Drawing is completed below ( better algorithm is possible but for now no need to waste time on it)
+    for element in connected_elements:
+        for sub_element in element:
+            has_frame = isinstance(sub_element, Frame)
+            if has_frame:
+                new_image = drawing_utils.draw_frame(sub_element, new_image, padding_of_created_images,
+                                                     ci_height, node_value_pixel_x, node_value_pixel_y)
+                # Similarly, you can check for other classes too if needed
+            has_point_load = isinstance(sub_element, PointLoad)
+            if has_point_load:
+                new_image = drawing_utils.draw_pl(sub_element, new_image, padding_of_created_images,
+                                                  ci_height, node_value_pixel_x, node_value_pixel_y)
+            has_fix_support = isinstance(sub_element, FixSupport)
+            if has_fix_support:
+                # Do something if the sub_element is an instance of FixSupport
+                new_image = drawing_utils.draw_fix_support(sub_element, new_image, frame_instances,
+                                                           padding_of_created_images, ci_height,
+                                                           node_value_pixel_x, node_value_pixel_y)
+            has_roller_support = isinstance(sub_element, RollerSupport)
+            if has_roller_support:
+                # Do something if the sub_element is an instance of FixSupport
+                new_image = drawing_utils.draw_roller_support(sub_element, new_image, padding_of_created_images,
+                                                              ci_height, node_value_pixel_x, node_value_pixel_y)
+            has_pin_support = isinstance(sub_element, PinSupport)
+            if has_pin_support:
+                # Do something if the sub_element is an instance of FixSupport
+                new_image = drawing_utils.draw_pin_support(sub_element, new_image, padding_of_created_images,
+                                                           ci_height, node_value_pixel_x, node_value_pixel_y)
+            has_distributed_load = isinstance(sub_element, DistributedLoad)
+            if has_distributed_load:
+                # Do something if the sub_element is an instance of FixSupport
+                print(sub_element)
+                new_image = drawing_utils.draw_distributed_load(sub_element, new_image)
+    new_image_np = np.array(new_image)
+    path_without_extension, extension = os.path.splitext(created_image_saving_path)
+    saving_path_with_png = path_without_extension + ".png"
+    cv.imwrite(saving_path_with_png, new_image_np)
+    return saving_path_with_png
+
+
 
 
 

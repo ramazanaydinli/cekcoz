@@ -43,12 +43,10 @@ def sorting_key(entry, img_height):
     """
     # Extract object detection bounding box
     y1, x1, y2, x2 = entry[2]
-
     avg_x = (x1 + x2) / 2
     avg_y = (y1 + y2) / 2
-
     # Calculate the Euclidean distance from the point (0, img_height)
-    distance = euclidean_distance([avg_x, 0], [avg_y, img_height])
+    distance = euclidean_distance([avg_x, avg_y], [0, img_height])
     return distance
 
 

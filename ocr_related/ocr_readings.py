@@ -37,5 +37,4 @@ def read_text_on_image(path):
             for line in text_result.lines:
                 dummy_list = [line.text, line.bounding_box]
                 reading_results.append(dummy_list)
-
     return reading_results

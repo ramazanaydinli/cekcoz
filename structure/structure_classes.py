@@ -87,3 +87,16 @@ class PointLoad:
     def __repr__(self):
         return f"PointLoad(node={self.node}, direction={self.direction}, value={self.value}, unit={self.unit}," \
                f" text_bbox = {self.text_bbox}, obj_det_bbox = {self.obj_det_bbox})"
+
+class DistributedLoad:
+    def __init__(self, node1=None, node2=None,obj_det_bbox = None, direction=None, value=None, unit=None):
+        self.node1 = node1
+        self.node2 = node2
+        self.obj_det_bbox = obj_det_bbox
+        self.direction = direction
+        self.value = value
+        self.unit = unit
+
+    def __repr__(self):
+        return f"DistributedLoad(node1={self.node1}, node2={self.node2}, obj_det_bbox={self.obj_det_bbox}, direction={self.direction}, value={self.value}, unit={self.unit})"
+
