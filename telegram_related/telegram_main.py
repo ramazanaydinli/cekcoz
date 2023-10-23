@@ -45,7 +45,7 @@ def reply_to_image(update, context):
         cv.imwrite(saving_path, img)
         new_image_path = object_detection_main.object_detection(img, saving_path, filename)
         with open(new_image_path, 'rb') as img_file:
-            context.bot.send_photo(chat_id=chat_id, photo=img_file, caption= "Al yarramın başı bak gördün mü cevap")
+            context.bot.send_photo(chat_id=chat_id, photo=img_file, caption= "Algılanan şekil çizimdeki gibidir")
 
 def hello(update):
     update.message.reply_text("Merhaba Dünya!")

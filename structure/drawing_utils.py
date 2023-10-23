@@ -4,6 +4,16 @@ import numpy as np
 
 def draw_frame(frame_instance, img, padding, height,
                node_value_pixel_x, node_value_pixel_y):
+    """
+    Draws frame on image
+    :param frame_instance:
+    :param img:
+    :param padding:
+    :param height:
+    :param node_value_pixel_x:
+    :param node_value_pixel_y:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
 
     # Extract the two nodes
@@ -26,6 +36,12 @@ def draw_frame(frame_instance, img, padding, height,
 
 
 def frame_direction_from_node(current_node, frame_instances):
+    """
+    Decides the direction of frame
+    :param current_node:
+    :param frame_instances:
+    :return:
+    """
     direction = None
     for frame in frame_instances:
         # Check if current_node is one of the two nodes in the frame
@@ -51,6 +67,17 @@ def frame_direction_from_node(current_node, frame_instances):
 
 def draw_fix_support(fs_instance, img, frame_instances, padding, height,
                      node_value_pixel_x, node_value_pixel_y):
+    """
+    Draws fix support
+    :param fs_instance:
+    :param img:
+    :param frame_instances:
+    :param padding:
+    :param height:
+    :param node_value_pixel_x:
+    :param node_value_pixel_y:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     node = fs_instance.node
     frame_direction = frame_direction_from_node(node, frame_instances)
@@ -82,6 +109,16 @@ def draw_fix_support(fs_instance, img, frame_instances, padding, height,
 
 def draw_roller_support(rs_instance, img, padding, height,
                         node_value_pixel_x, node_value_pixel_y):
+    """
+    Draws roller support
+    :param rs_instance:
+    :param img:
+    :param padding:
+    :param height:
+    :param node_value_pixel_x:
+    :param node_value_pixel_y:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     node = rs_instance.node
     color = "black"
@@ -114,6 +151,16 @@ def draw_roller_support(rs_instance, img, padding, height,
 
 def draw_pin_support(ps_instance, img, padding, height,
                      node_value_pixel_x, node_value_pixel_y):
+    """
+    Draws pin support
+    :param ps_instance:
+    :param img:
+    :param padding:
+    :param height:
+    :param node_value_pixel_x:
+    :param node_value_pixel_y:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     node = ps_instance.node
     color = "black"
@@ -150,6 +197,16 @@ def draw_pin_support(ps_instance, img, padding, height,
 
 
 def write_point_load_value_directly(img, start_x, start_y, direction, unit, value):
+    """
+    Writing value and unit of point load on image
+    :param img:
+    :param start_x:
+    :param start_y:
+    :param direction:
+    :param unit:
+    :param value:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("arial.ttf", 25)
     text = f"{value} {unit}"
@@ -168,6 +225,16 @@ def write_point_load_value_directly(img, start_x, start_y, direction, unit, valu
 
 def draw_pl(pl_instance, img, padding, height,
             node_value_pixel_x, node_value_pixel_y):
+    """
+    Drawing point load on image
+    :param pl_instance:
+    :param img:
+    :param padding:
+    :param height:
+    :param node_value_pixel_x:
+    :param node_value_pixel_y:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     arrow_length = 75
     node_of_action = pl_instance.node
@@ -215,6 +282,16 @@ def draw_pl(pl_instance, img, padding, height,
 
 
 def write_distributed_load_value_directly(img, start_x, start_y, direction, unit, value):
+    """
+    Writing distributed load value and unit on image
+    :param img:
+    :param start_x:
+    :param start_y:
+    :param direction:
+    :param unit:
+    :param value:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("arial.ttf", 25)
     text = f"{value} {unit}"
@@ -263,16 +340,27 @@ def write_distributed_load_value_directly(img, start_x, start_y, direction, unit
     return img
 
 
-def draw_distributed_load(dl_instance, img, extra_pixels_x, extra_pixels_y, height,
+def draw_distributed_load(dl_instance, img, padding, height,
                           node_value_pixel_x, node_value_pixel_y):
+    """
+    Drawing distributed load on image
+    :param dl_instance:
+    :param img:
+    :param extra_pixels_x:
+    :param extra_pixels_y:
+    :param height:
+    :param node_value_pixel_x:
+    :param node_value_pixel_y:
+    :return:
+    """
     draw = ImageDraw.Draw(img)
     arrow_tail_length = 40
     text_skew_y = 10
     text_skew_x = 10
     if dl_instance.direction == "downward":
-        start_x = extra_pixels_x / 2 + dl_instance.node1.shape_x * node_value_pixel_x
-        end_x = extra_pixels_x / 2 + dl_instance.node2.shape_x * node_value_pixel_x
-        y = height - (extra_pixels_y / 2 + dl_instance.node1.shape_y * node_value_pixel_y + arrow_tail_length)
+        start_x = padding / 2 + dl_instance.node1.shape_x * node_value_pixel_x
+        end_x = padding / 2 + dl_instance.node2.shape_x * node_value_pixel_x
+        y = height - (padding / 2 + dl_instance.node1.shape_y * node_value_pixel_y + arrow_tail_length)
 
         # Draw horizontal line
         draw.line((start_x, y, end_x, y), fill='green', width=3)
@@ -298,9 +386,9 @@ def draw_distributed_load(dl_instance, img, extra_pixels_x, extra_pixels_y, heig
         img = write_distributed_load_value_directly(img, ((start_x + end_x) / 2), y - text_skew_y, "downward",
                                                     dl_instance.unit, dl_instance.value)
     elif dl_instance.direction == "left":
-        x = extra_pixels_x / 2 + dl_instance.node1.shape_x * node_value_pixel_x + arrow_tail_length
-        start_y = height - (extra_pixels_y / 2 + dl_instance.node1.shape_y * node_value_pixel_y)
-        end_y = height - (extra_pixels_y / 2 + dl_instance.node2.shape_y * node_value_pixel_y)
+        x = padding / 2 + dl_instance.node1.shape_x * node_value_pixel_x + arrow_tail_length
+        start_y = height - (padding / 2 + dl_instance.node1.shape_y * node_value_pixel_y)
+        end_y = height - (padding / 2 + dl_instance.node2.shape_y * node_value_pixel_y)
 
         draw.line((x, start_y, x, end_y), fill='green', width=3)
         # Calculate number of segments based on width and draw arrows
@@ -311,7 +399,7 @@ def draw_distributed_load(dl_instance, img, extra_pixels_x, extra_pixels_y, heig
 
         arrowhead_length = 10  # Length of the arrowhead
         for i in range(num_arrows):
-            arrow_y = start_y + i * spacing
+            arrow_y = min(start_y, end_y) + i * spacing
 
             # Vertical line of the arrow
             draw.line((x, arrow_y, x - arrow_tail_length, arrow_y), fill='green', width=3)
@@ -328,9 +416,9 @@ def draw_distributed_load(dl_instance, img, extra_pixels_x, extra_pixels_y, heig
                                                     dl_instance.unit, dl_instance.value)
 
     elif dl_instance.direction == "right":
-        x = extra_pixels_x / 2 + dl_instance.node1.shape_x * node_value_pixel_x - arrow_tail_length
-        start_y = height - (extra_pixels_y / 2 + dl_instance.node1.shape_y * node_value_pixel_y)
-        end_y = height - (extra_pixels_y / 2 + dl_instance.node2.shape_y * node_value_pixel_y)
+        x = padding / 2 + dl_instance.node1.shape_x * node_value_pixel_x - arrow_tail_length
+        start_y = height - (padding / 2 + dl_instance.node1.shape_y * node_value_pixel_y)
+        end_y = height - (padding / 2 + dl_instance.node2.shape_y * node_value_pixel_y)
 
         draw.line((x, start_y, x, end_y), fill='green', width=3)
         # Calculate number of segments based on width and draw arrows
@@ -357,4 +445,86 @@ def draw_distributed_load(dl_instance, img, extra_pixels_x, extra_pixels_y, heig
         img = write_distributed_load_value_directly(img, x, ((start_y + end_y) / 2) - text_skew_y, "right",
                                                     dl_instance.unit, dl_instance.value)
     return img
+
+
+def draw_dimension(dimensions, img, padding, height,
+                   node_value_pixel_x, node_value_pixel_y):
+    """
+    Draws dimensions on a given image based on the provided Dimension instances.
+
+    Args:
+    - dimensions (list): List of Dimension objects.
+    - img (Image): PIL Image object where the dimensions should be drawn.
+
+    Returns:
+    - Modified Image object with lines drawn and texts added.
+    """
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arial.ttf", 25)  # Adjust as necessary
+    line_color = 'black'
+    pixel_difference = 75
+
+    for dimension in dimensions:
+        if dimension.node_1.shape_y == dimension.node_2.shape_y:
+            # Use shape_x of node_1 and node_2 for determining x-coordinates and offset it by extra_pixels_x/2.
+            start_x = dimension.node_1.shape_x * node_value_pixel_x + padding / 2
+            start_y = height - (padding / 2 - pixel_difference)
+            end_x = dimension.node_2.shape_x * node_value_pixel_x + padding / 2
+            end_y = start_y
+
+            # Draw the horizontal line
+            draw.line((start_x, start_y, end_x, end_y), fill=line_color, width=2)
+
+            # Draw the vertical lines at the start and end of each horizontal line
+            draw.line((start_x, start_y - 8, start_x, start_y + 8), fill=line_color, width=2)
+            draw.line((end_x, end_y - 8, end_x, end_y + 8), fill=line_color, width=2)
+
+            # Write the value and unit just below the horizontal line
+            text_x = (start_x + end_x) / 2 - 10  # A small offset to center the text
+            text_y = end_y + 5  # A small offset to place the text below the line
+            draw.text((text_x, text_y), f"{dimension.value} {dimension.unit}", fill=line_color, font=font)
+        elif dimension.node_1.shape_x == dimension.node_2.shape_x:
+            start_x = dimension.node_1.shape_x * node_value_pixel_x + padding / 2 + pixel_difference
+            start_y = height - (dimension.node_1.shape_y * node_value_pixel_y + padding / 2)
+            end_x = start_x
+            end_y = height - (dimension.node_2.shape_y * node_value_pixel_y + padding / 2)
+
+            # Draw the horizontal line
+            draw.line((start_x, start_y, end_x, end_y), fill=line_color, width=2)
+
+            # Draw the horizontal lines at the start and end of each vertical line
+            draw.line((start_x - 8, start_y, start_x + 8, start_y), fill=line_color, width=2)
+            draw.line((end_x - 8, end_y, end_x + 8, end_y), fill=line_color, width=2)
+
+            # Write the value and unit just below the horizontal line
+            text_x = start_x + 6  # A small offset to center the text
+            text_y = (start_y + end_y) / 2 + -10  # A small offset to place the text below the line
+            draw.text((text_x, text_y), f"{dimension.value} {dimension.unit}", fill=line_color, font=font)
+    return img
+
+
+def label_nodes(node_instances, img, padding, height, node_value_pixel_x, node_value_pixel_y):
+    """
+    Adds labels (node names) to the nodes on the given image.
+
+    Args:
+    - node_instances (list): List of Node objects.
+    - img (Image): PIL Image object where the node names should be written.
+
+    Returns:
+    - Modified Image object with node names written.
+    """
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arial.ttf", 25)
+    pixel_difference = 15
+
+    for node in node_instances:
+        if node.name:  # Only label nodes that have a name
+            x = node.shape_x * node_value_pixel_x + padding / 2 - 35
+            y = height - (node.shape_y * node_value_pixel_y + padding / 2 - pixel_difference)
+
+            draw.text((x, y), node.name, font=font, fill="black")
+
+    return img
+
 

@@ -25,7 +25,13 @@ def detect_fn(image, detection_model):
     return detections
 
 def object_detection(image, path_of_image, incoming_filename):
-
+    """
+    Main part of the software
+    :param image: input image obtained from telegram chat
+    :param path_of_image: image is saved after taken from group, this variable keeps that saving path
+    :param incoming_filename: filename created according to a pattern (user_name + datetime info)
+    :return: returns solution (for now it is an image, later it will be a pdf file)
+    """
 
     user_path = os.path.expanduser("~")
     training_demo_path = os.path.join(user_path, "Desktop", "cekcoz_v3", "workspace", "training_demo")
@@ -101,8 +107,8 @@ def object_detection(image, path_of_image, incoming_filename):
     spacing_extracted_results = ocr_postprocess.extract_value_unit(spacing_sec_filtered_results)
 
     # Before construction sorting is required
-    sorted_spacings = sorted(spacing_extracted_results,
-                             key=lambda entry: calculation_utils.sorting_key(entry, img_height))
+    sorted_spacings = sorted(spacing_extracted_results, key=calculation_utils.sorting_key)
+
     # Below, direction of the dimension is decided ( for now only horizontal and vertical implemented)
     sorted_spacings_with_directions = structure_utils.dimension_direction(sorted_spacings, image)
 
@@ -206,8 +212,12 @@ def object_detection(image, path_of_image, incoming_filename):
             has_distributed_load = isinstance(sub_element, DistributedLoad)
             if has_distributed_load:
                 # Do something if the sub_element is an instance of FixSupport
-                print(sub_element)
-                new_image = drawing_utils.draw_distributed_load(sub_element, new_image)
+                new_image = drawing_utils.draw_distributed_load(sub_element, new_image, padding_of_created_images,
+                                                                ci_height, node_value_pixel_x, node_value_pixel_y)
+    new_image = drawing_utils.draw_dimension(spacing_instances, new_image, padding_of_created_images,
+                                             ci_height, node_value_pixel_x, node_value_pixel_y)
+    new_image = drawing_utils.label_nodes(node_instances, new_image, padding_of_created_images,
+                                          ci_height, node_value_pixel_x, node_value_pixel_y)
     new_image_np = np.array(new_image)
     path_without_extension, extension = os.path.splitext(created_image_saving_path)
     saving_path_with_png = path_without_extension + ".png"

@@ -34,21 +34,18 @@ def euclidean_distance(center1, center2):
     return ((center1[0] - center2[0])**2 + (center1[1] - center2[1])**2)**0.5
 
 
-def sorting_key(entry, img_height):
+def sorting_key(entry):
     """
-    Sorts dimensions according to the distance between bottom left coordinates of image and their central coordinate
+    Sorts dimensions according to avg_x and then by avg_y in reverse order
     :param entry: List containing spacing info
-    :param img_height: Height of image in pixels
-    :return: sorted input
+    :return: tuple used for sorting
     """
     # Extract object detection bounding box
     y1, x1, y2, x2 = entry[2]
     avg_x = (x1 + x2) / 2
     avg_y = (y1 + y2) / 2
-    # Calculate the Euclidean distance from the point (0, img_height)
-    distance = euclidean_distance([avg_x, avg_y], [0, img_height])
-    return distance
-
+    # Return a tuple where avg_x is the primary key and -avg_y is the secondary key
+    return (avg_x, -avg_y)
 
 
 

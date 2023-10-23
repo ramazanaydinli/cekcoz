@@ -5,6 +5,11 @@ import time
 
 
 def read_text_on_image(path):
+    """
+    Reads text on image
+    :param path: input image path
+    :return: ocr text
+    """
 
     subscription_key = "d9db8bd3bed7440a86b510dca41abdc6"
     endpoint = "https://cekcozocr.cognitiveservices.azure.com/"
