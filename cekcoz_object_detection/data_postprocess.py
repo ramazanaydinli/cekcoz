@@ -97,9 +97,3 @@ def remove_multiple_detections(detections_list, percentage_thresh):
     to_remove = list(set(to_remove))
     detections_list = [detections_list[i] for i in range(len(detections_list)) if i not in to_remove]
     return detections_list
-
-
-
-
-
-

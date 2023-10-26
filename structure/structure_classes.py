@@ -100,3 +100,15 @@ class DistributedLoad:
     def __repr__(self):
         return f"DistributedLoad(node1={self.node1}, node2={self.node2}, obj_det_bbox={self.obj_det_bbox}, direction={self.direction}, value={self.value}, unit={self.unit})"
 
+class TriangularDistributedLoad:
+    def __init__(self, node1=None, node2=None,obj_det_bbox = None, direction=None, value1=None, value2=None, unit=None):
+        self.node1 = node1
+        self.node2 = node2
+        self.obj_det_bbox = obj_det_bbox
+        self.direction = direction
+        self.value1 = value1
+        self.value2 = value2
+        self.unit = unit
+
+    def __repr__(self):
+        return f"DistributedLoad(node1={self.node1}, node2={self.node2}, obj_det_bbox={self.obj_det_bbox}, direction={self.direction}, value1={self.value1}, value2={self.value2}, unit={self.unit})"

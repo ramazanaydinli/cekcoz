@@ -44,11 +44,14 @@ def reply_to_image(update, context):
         saving_path = os.path.join(os.getcwd(), "gelen_resimler", filename)
         cv.imwrite(saving_path, img)
         new_image_path = object_detection_main.object_detection(img, saving_path, filename)
-        with open(new_image_path, 'rb') as img_file:
-            context.bot.send_photo(chat_id=chat_id, photo=img_file, caption= "Algılanan şekil çizimdeki gibidir")
-
-def hello(update):
-    update.message.reply_text("Merhaba Dünya!")
+        if new_image_path.endswith(".png"):
+            with open(new_image_path, 'rb') as img_file:
+                context.bot.send_photo(chat_id=chat_id, photo=img_file, caption= "Algılanan şekil çizimdeki gibidir")
+        else:
+            error_message = new_image_path
+            context.bot.send_message(chat_id=chat_id, text=error_message)
+# def hello(update, context):
+#     update.message.reply_text("Merhaba Dünya!")
 
 
 def main():
@@ -61,7 +64,7 @@ def main():
     # Gruba gönderilen resimlere cevap vermek için bir mesaj işleyici ekleyin
     dispatcher.add_handler(MessageHandler(Filters.photo, reply_to_image))
 
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, hello))
+    # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, hello))
 
     updater.start_polling()
     updater.idle()

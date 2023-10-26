@@ -80,13 +80,20 @@ def object_detection(image, path_of_image, incoming_filename):
     applicable_list = data_postprocess.remove_ambiguous_detections(score_threshold, aggregated_list, category_index,
                                                                    img_width, img_height)
 
+    error_statement = """Gönderilen resim çözüm için uygun değildir, muhtemelen sebepler:
+    - İletilen resim bu ders ile alakalı değil
+    - İletilen resmin kalitesi sistemin tanıyamayacağı kadar kötü
+    - İletilen resimde çizimin üstünde bulunan bilgiler çözüm için yeterli değil
+    - İletilen resimde çözüm için gereken bilgiler yazı içinde açıklanmış"""
     # Models trained with small dataset may detect same object more than once, function below will remove multiple
     # detections, if dataset is large enough, this function could be removed
     applicable_list = data_postprocess.remove_multiple_detections(applicable_list, percentage_thresh=0.7)
-
+    if len(applicable_list) < 3:
+        return error_statement
     # Function below reads the text on the image and send back results, more information could be obtained from azure
     reading_results = read_text_on_image(path_of_image)
-
+    if not reading_results:
+        return error_statement
     # ----------For testing OCR reading results, code below could be used---------------
     # print(reading_results)
 
@@ -99,6 +106,8 @@ def object_detection(image, path_of_image, incoming_filename):
     # Construction of question starts with dimension related operations
     # Below, obj det resultant classes filtered and "spacing" classes are separated
     spacing_bbox = [item[:4] for item in applicable_list if item[4] == 'spacing']
+    if not spacing_bbox:
+        return error_statement
     # Below, obtained results above will be assigned with ocr text
     spacing_matching_results = ocr_postprocess.match_spacings(spacing_bbox, ocr_results)
     # Below, ocr text will be filtered for removing misread bad characters
@@ -114,6 +123,8 @@ def object_detection(image, path_of_image, incoming_filename):
 
     # Initialization of construction is below
     spacing_instances, node_instances = structure_utils.initialize_parameters(sorted_spacings_with_directions)
+    if not node_instances or not spacing_instances:
+        return error_statement
     # Sometimes geometry of the shape creates nodes with negative values which is corrected below
     node_instances = structure_utils.correct_shapes(node_instances)
     # For every break point there should be a node which are ensured below
