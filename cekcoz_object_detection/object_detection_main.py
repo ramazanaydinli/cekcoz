@@ -172,6 +172,15 @@ def object_detection(image, path_of_image, incoming_filename):
     # Function below assigns magnitude and value of distributed load
     distributed_load_instances = ocr_postprocess.extract_precise_text_dl(distributed_load_instances, ocr_results)
 
+    tdl_boxes = [box for box in applicable_list if box[-1] == 'triangular_distributed_load']
+    tdl_with_direction = image_utils.dl_direction(tdl_boxes, image, initial_iterations=1, max_iterations=10, threshold=1)
+    print("tdl direction", tdl_with_direction)
+    t_distributed_load_instances = structure_utils.assign_nodes_tdl(tdl_with_direction, node_instances)
+    print("T dist instances", t_distributed_load_instances)
+    t_distributed_load_instances = ocr_postprocess.extract_precise_text_tdl(t_distributed_load_instances,
+                                                                            distributed_load_instances, ocr_results)
+    print("T dist", t_distributed_load_instances)
+
     # Function below finds connected elements to the nodes (needs to be optimized in future)
     connected_elements = structure_utils.find_connected_elements(
         sorted_nodes, new_frame_instances, fix_support_instances, point_load_instances,

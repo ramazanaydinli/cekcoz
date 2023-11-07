@@ -8,7 +8,8 @@ def read_text_on_image(path):
     """
     Reads text on image
     :param path: input image path
-    :return: ocr text
+    :return: ocr text , each element contains [text, [topleft_x, topleft_y, topright_x, topright_y,bottomright_x," \
+    "bottomright_y,bottomleft_x,bottomleft_y]]"
     """
 
     subscription_key = "d9db8bd3bed7440a86b510dca41abdc6"

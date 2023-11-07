@@ -4,15 +4,25 @@ from structure import calculation_utils
 
 def clean_ocr_results(ocr_results):
     """
-    Removing bad reading characters
+    Removing bad reading characters and any text before the "=" symbol
     :param ocr_results: initial reading results
     :return: cleansed results
     """
     # A list of meaningless readings. You can extend this list as required
     meaningless_readings = ["-"]
 
-    # Filter out results with meaningless readings
-    cleaned_results = [result for result in ocr_results if result[0] not in meaningless_readings]
+    cleaned_results = []
+
+    for result in ocr_results:
+        text, *rest = result
+
+        # Remove everything before and including the "=" symbol
+        if "=" in text:
+            text = text.split("=", 1)[1]
+
+        # Append the cleaned text to the cleaned results list if not in meaningless readings
+        if text not in meaningless_readings:
+            cleaned_results.append((text, *rest))
 
     return cleaned_results
 
@@ -238,3 +248,47 @@ def extract_precise_text_dl(dl_instances, ocr_text):
             dl.value = float(match.group("value"))  # Convert to float instead of int
             dl.unit = match.group("unit")
     return dl_instances
+
+
+def find_closest_text_tdl(ocr_list, bbox):
+    pattern = re.compile(r"(?i)(?P<value>\d+(\.\d+)?)\s*(?P<unit>kN/m|N/m|k/ft)")
+    center_x, center_y = bbox
+    threshold = 150
+
+    sorted_ocr_list = sorted(
+        ocr_list,
+        key=lambda entry: (
+                                  center_x - (entry[1][0] + entry[1][2] + entry[1][4] + entry[1][6]) / 4) ** 2 +
+                          (center_y - (entry[1][1] + entry[1][3] + entry[1][5] + entry[1][7]) / 4) ** 2
+    )
+
+    for entry in sorted_ocr_list:
+        text_distance = (
+                                (center_x - (entry[1][0] + entry[1][2] + entry[1][4] + entry[1][6]) / 4) ** 2 +
+                                (center_y - (entry[1][1] + entry[1][3] + entry[1][5] + entry[1][7]) / 4) ** 2
+                        ) ** 0.5
+
+        if text_distance > threshold:
+            continue
+
+        text = entry[0]
+        match = pattern.match(text)
+        if match:
+            return match
+    return None
+
+
+def extract_precise_text_tdl(tdl_instances, dl_instances, ocr_text):
+    for tdl in tdl_instances:
+        bbox1 = [tdl.node1.bbox_x, tdl.node1.bbox_y]
+        match1 = find_closest_text_tdl(ocr_text, bbox1)
+        if match1:
+            tdl.value1 = float(match1.group("value"))
+            tdl.unit = match1.group("unit")
+        bbox2 = [tdl.node2.bbox_x, tdl.node2.bbox_y]
+        match2 = find_closest_text_tdl(ocr_text, bbox2)
+        if match2:
+            tdl.value2 = float(match2.group("value"))
+            tdl.unit = match2.group("unit")
+    return tdl_instances
+

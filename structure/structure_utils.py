@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from structure import calculation_utils
 from structure.structure_classes import Node, Dimension, FixSupport, PinSupport, RollerSupport, Frame, PointLoad,\
-    DistributedLoad
+    DistributedLoad, TriangularDistributedLoad
 import itertools
 
 
@@ -505,6 +505,43 @@ def assign_nodes_dl(dl_with_direction, node_instances):
             # Need to fill this later
             pass
     return distributed_load_instances
+
+def assign_nodes_tdl(tdl_with_direction, node_instances):
+    """
+    Assigns the closest nodes both ends of distributed load
+    :param dl_with_direction: dl instances with directions decided
+    :param node_instances: list keeping node instances
+    :return: node attributed assigned distributed load instances
+    """
+    t_distributed_load_instances = []
+    for box in tdl_with_direction:
+        if box[5] == "horizontal":
+
+            y1 = box[0]
+            y2 = box[2]
+            x = int((box[1] + box[3]) / 2)
+            # Get the closest node to x1 and x2
+            c_node1 = find_closest_node(x, y1, node_instances)
+            c_node2 = find_closest_node(x, y2, node_instances)
+
+            tdl_instance = TriangularDistributedLoad(node1=c_node1, node2=c_node2, obj_det_bbox=box[:4], direction=box[6])
+            t_distributed_load_instances.append(tdl_instance)
+        elif box[5] == "vertical":
+            x1 = box[1]
+            x2 = box[3]
+            y = int((box[0] + box[2]) / 2)
+
+            # Get the closest node to x1 and x2
+            c_node1 = find_closest_node(x1, y, node_instances)
+            c_node2 = find_closest_node(x2, y, node_instances)
+
+            tdl_instance = TriangularDistributedLoad(node1=c_node1, node2=c_node2, obj_det_bbox=box[:4], direction=box[6])
+            t_distributed_load_instances.append(tdl_instance)
+        else:
+            # Need to fill this later
+            pass
+    return t_distributed_load_instances
+
 
 def find_connected_elements(sorted_nodes, new_frame_instances, fix_support_instances, point_load_instances,
                             roller_support_instances, pin_support_instances, distributed_load_instances):
