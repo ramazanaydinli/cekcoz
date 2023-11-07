@@ -104,7 +104,7 @@ def initialize_parameters(sorted_spacings_with_directions):
                 node_instances.append(node_1)
                 bbox_x = x2
                 bbox_y = int((y1 + y2) / 2)
-                node_2 = Node(bbox_x, bbox_y, shape_x_start + int(distance), shape_y_start)
+                node_2 = Node(bbox_x, bbox_y, shape_x_start + distance, shape_y_start)
                 node_instances.append(node_2)
                 spacing = Dimension(node_1, node_2, distance, unit, obj_det_bbox, text_bbox)
                 spacing_instances.append(spacing)
@@ -120,7 +120,7 @@ def initialize_parameters(sorted_spacings_with_directions):
                 node_instances.append(node_1)
                 bbox_x = int(x1 + x2) / 2
                 bbox_y = y2
-                node_2 = Node(bbox_x, bbox_y, shape_x_start, shape_y_start + int(distance))
+                node_2 = Node(bbox_x, bbox_y, shape_x_start, shape_y_start + distance)
                 node_instances.append(node_2)
                 spacing = Dimension(node_1, node_2, distance, unit, obj_det_bbox, text_bbox)
                 spacing_instances.append(spacing)
