@@ -12,8 +12,8 @@ def read_text_on_image(path):
     "bottomright_y,bottomleft_x,bottomleft_y]]"
     """
 
-    subscription_key = "d9db8bd3bed7440a86b510dca41abdc6"
-    endpoint = "https://cekcozocr.cognitiveservices.azure.com/"
+    subscription_key = ""
+    endpoint = ""
 
     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
