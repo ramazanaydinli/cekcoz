@@ -6,7 +6,7 @@ import cv2 as cv
 from cekcoz_object_detection import object_detection_main
 
 # Bot tokenını buraya ekleyin
-TOKEN = "6517406670:AAF6VHk1RjlVa5FzAxW_ZDmLXQtlJZwatlU"
+TOKEN = ""
 
 
 # Resim mesajı alındığında ekranda gözükecek yazı aşağıdadır.
